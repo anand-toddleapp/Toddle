@@ -2,7 +2,7 @@ const express = require('express');
 const { graphqlHTTP } = require('express-graphql');
 const schema = require('./schema/index.js');
 const resolver = require('./resolver/index.js');
-
+const isAuth = require('./middleware/is-auth');
 // const connectDB = require('./config/db');
 const port = process.env.PORT || 5000;
 const mongoose = require("mongoose")
@@ -17,7 +17,7 @@ mongoose.connect(`mongodb+srv://kali:kali@cluster0.msujdem.mongodb.net/booking?r
     console.log(err);
 }
 )
-
+app.use(isAuth);
 
 app.use(
     '/graphql',
