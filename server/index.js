@@ -3,37 +3,49 @@ const { graphqlHTTP } = require('express-graphql');
 const schema = require('./schema/index.js');
 const resolver = require('./resolver/index.js');
 const isAuth = require('./middleware/is-auth');
-// const connectDB = require('./config/db');
-require("dotenv").config()
-const port = process.env.PORT || 5000;
-const mongoose = require("mongoose")
-const app = express();
- 
-mongoose.connect(`mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.msujdem.mongodb.net/booking?retryWrites=true&w=majority`)
-.then(()=>{
-    app.listen(port, console.log(`Server running on port ${port}`));
-})
-.catch((err)=>
-{
-    console.log(err);
-}
-)
-app.use(isAuth);
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST,GET,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
+const knex = require('./config/knexfile.js'); // Import Knex instance
+require("dotenv").config();
+
+const port = 5000;
+
+const startServer = async () => {
+  try {
+    // Connect to the PostgreSQL database
+    await knex.raw('SELECT 1');
+    console.log('Connected to PostgreSQL database');
+
+    // Initialize Express application
+    const app = express();
+
+    app.use(isAuth);
+    app.use((req, res, next) => {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'POST,GET,OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+      }
+      next();
+    });
+
+    app.use(
+      '/graphql',
+      graphqlHTTP({
+        schema: schema,
+        rootValue: resolver,
+        graphiql: true,
+      })
+    );
+
+    // Start the server
+    app.listen(port, () => {
+      console.log(`Server running on port ${port}`);
+    });
+  } catch (error) {
+    console.error('Unable to connect to PostgreSQL:', error);
+    process.exit(1); // Exit the application if unable to connect to the database
   }
-  next();
-});
-app.use(
-  '/graphql',
-  graphqlHTTP({
-    schema: schema,
-    rootValue: resolver,
-    graphiql: true, 
-  })
-);
-  
+};
+
+// Call the async function to start the server after connecting to the database
+startServer();

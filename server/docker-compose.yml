@@ -1,0 +1,14 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:14.4
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: cepl
+      POSTGRES_PASSWORD: null
+      POSTGRES_DB: bookingapp
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+volumes:
+  postgres_data:
