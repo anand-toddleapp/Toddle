@@ -1,29 +1,27 @@
-const mongoose = require('mongoose');
 
-const Schema = mongoose.Schema;
+const knex = require('../config/knexfile');
 
+module.exports = {
+  async findEvents() {
+    return knex('events').select('*');
+  },
 
-const eventSchema = new Schema({
-    title: {
-      type: String,
-      required: true
-    },
-    description: {
-      type: String,
-      required: true
-    },
-    price: {
-      type: Number,
-      required: true
-    },
-    date: {
-      type: Date,
-      required: true
-    },
-    creator: {
-        type: Schema.Types.ObjectId,
-        ref: 'User'
-    }
-  });
-  
-  module.exports = mongoose.model('Event', eventSchema);
+  async createEvent(eventInput, userId) {
+    return knex('events').insert({
+      title: eventInput.title,
+      description: eventInput.description,
+      price: eventInput.price,
+      date: eventInput.date,
+      creator_id: userId,
+    }).returning('*');
+  },
+  async getEventById(eventId) {
+      return await knex('events').where('id', eventId);
+  },
+  async getEventsByUserId(userId) {
+    return await knex('events').where('creator_id', userId);
+},
+  async getEventsByIds(eventIds){
+    return await knex('events').whereIn('id', eventIds)
+  }
+};
