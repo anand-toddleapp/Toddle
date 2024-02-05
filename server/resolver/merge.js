@@ -24,8 +24,8 @@ const singleEvent = async (eventId) => {
   } catch (err) {
     throw err;
   }
-};
-
+}; 
+//test
 const user = async (userId) => {
   try {
     const user = await userLoader.load(userId);
